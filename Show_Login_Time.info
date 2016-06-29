@@ -1,0 +1,4 @@
+name = Show_Login_Time
+description = Implements a block displaying user's last login time, hides after 10 secs.
+core = 7.x
+scripts[] = Show_Login_Time.js

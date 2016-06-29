@@ -1,0 +1,127 @@
+<?php
+/**
+ * Created by Ellen R. Sullivan
+ * August 5, 2015
+ */
+
+/**
+ * @file
+ * A module written in response to a hiring test
+ *
+ * This module provides the following features:
+ *
+ *  Displays a block that shows the time the user last logged in. “You last logged in at "
+ *  In the user’s current time-zone
+ *  The block automatically be placed in left side-rail region (if available)
+ *  The block is not visible for non-logged in users.
+ *  The title and message can be confiured by install, and uses site medium as default time format
+ *  The block appears upon page load and hides after 10 seconds.
+ *
+ */
+
+    /**
+     * Implements hook_help()
+     *
+     * Diplays help text
+     *
+     * @param $path
+     * @param $arg
+     *
+     * @return string
+     */
+
+    function Show_Login_Time_help($path, $arg) {
+        switch ($path) {
+            case "admin/help#Show_Login_Time":
+                return '<p>' . t("Displays the time the user last logged in, in user's current time zone.") . '</p>';
+                break;
+        }
+    }
+
+    /**
+     * Implements hook_block_info
+     *
+     * Creates the info and sets initial to
+     * sidebar_first (if available)
+     *
+     * @return mixed
+     */
+    function Show_Login_Time_block_info() {
+    $blocks['Show_Login_Time'] = array(
+        'info' => t('Show Login Time'),
+        'cache' => DRUPAL_CACHE_PER_ROLE,
+        'region' => 'sidebar_first',
+    );
+    return $blocks;
+}
+
+    /**
+     * Implements hook_block_configure().
+     *
+     * Creates text field to allow changing text to be displayed
+     * in block; sets a default text.
+     *
+     * @param $delta
+     *
+     * @return array
+     */
+    function Show_Login_Time_block_configure($delta='') {
+        $form = array();
+
+        switch($delta) {
+            case 'Show_Login_Time' :
+                $form['text_body'] = array(
+                    '#type' => 'text_format',
+                    '#title' => t('Enter your text here in WYSIWYG format'),
+                    '#default_value' => "You last logged in on <br>",
+                );
+
+                break;
+        }
+        return $form;
+    }
+
+    /**
+     * Implements hook_block_save().
+     *
+     * Saves edits made to display text.
+     *
+     * @param $delta
+     * @param $edit
+     */
+    function Show_Login_Time_block_save($delta = '', $edit = array()) {
+        switch($delta) {
+            case 'Show_Login_Time' :
+                variable_set('text_variable', $edit['text_body']['value']);
+
+                break;
+        }
+    }
+
+    /**
+     * Implements hook_block_view
+     *
+     * Tests to see if user is logged in.
+     *
+     * Creates the body of the block view.
+     *
+     * @param string $delta
+     *
+     * @return mixed
+     */
+    function Show_Login_Time_block_view($delta = '') {
+        if (!user_is_logged_in()) return;
+
+        global $user;
+
+        $message =  variable_get('text_variable', '');
+
+        switch ($delta) {
+            case 'Show_Login_Time':
+                $block['subject'] = t('Show Last Login');
+                $block['content'] = $message . format_date($user->login);
+            break;
+        }
+
+        return $block;
+    }
